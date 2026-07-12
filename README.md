@@ -1,0 +1,2 @@
+# Customer Churn Prediction
+I built an intelligent web application that helps telecom companies predict if a customer is about to cancel their service. I fed historical customer data into a machine learning algorithm so it could learn the warning signs of someone leaving—like having a short-term contract but very high monthly bills. Now, a user can type a customer's details into my app, and it instantly calculates a 'Churn Probability.' If the risk is high, the company knows exactly who to target with a retention offer
