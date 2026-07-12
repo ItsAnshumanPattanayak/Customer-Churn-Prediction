@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 st.set_page_config(page_title="Customer Churn Predictor", layout="wide")
 
 # --- CURRENCY SETUP ---
-# Standard approximate exchange rates (1 USD = X Currency)
 CURRENCIES = {
     "United States Dollar (USD)": {"rate": 1.0, "symbol": "$"},
     "Euro (EUR)": {"rate": 0.92, "symbol": "€"},
@@ -25,7 +24,6 @@ CURRENCIES = {
     "Indian Rupee (INR)": {"rate": 83.0, "symbol": "₹"}
 }
 
-# Sidebar settings
 st.sidebar.header("⚙️ Global Settings")
 selected_currency = st.sidebar.selectbox("Select Currency", list(CURRENCIES.keys()))
 rate = CURRENCIES[selected_currency]["rate"]
@@ -64,7 +62,6 @@ with tab1:
 
     with col1:
         tenure = st.slider("Tenure (Months)", 0, 72, 12)
-        # Inputs dynamically scale based on the selected exchange rate
         monthly_charges = st.number_input(f"Monthly Charges ({sym})", float(18.0 * rate), float(120.0 * rate), float(50.0 * rate))
         total_charges = st.number_input(f"Total Charges ({sym})", float(18.0 * rate), float(8000.0 * rate), float(500.0 * rate))
 
@@ -77,7 +74,7 @@ with tab1:
         contract_encoded = encoders['Contract'].transform([contract])[0]
         internet_encoded = encoders['InternetService'].transform([internet_service])[0]
         
-        # CRUCIAL ML STEP: Convert charges back to USD for the model prediction
+        # Convert charges back to USD for the model prediction
         monthly_charges_usd = monthly_charges / rate
         total_charges_usd = total_charges / rate
         
@@ -89,11 +86,39 @@ with tab1:
         probability = model.predict_proba(features)[0][1]
         
         st.divider()
+        
+        # Display Prediction Result
         if prediction == 1:
             st.error(f"⚠️ High Risk of Churn! (Probability: {probability:.2%})")
             st.write("Recommendation: Offer a discount or upgrade to a longer-term contract.")
         else:
             st.success(f"✅ Customer is likely to stay. (Churn Probability: {probability:.2%})")
+            
+        st.divider()
+        
+        # --- NEW FEATURE: Financial Impact Analysis (CLV Risk) ---
+        st.subheader("💼 Financial Impact Analysis (12-Month Projection)")
+        st.write("This calculates the expected revenue loss over the next year based on this customer's churn probability.")
+        
+        # Calculate Yearly Revenue and Risk in the user's selected currency
+        yearly_revenue = monthly_charges * 12
+        value_at_risk = yearly_revenue * probability
+        
+        # Display metrics in 3 columns
+        col_m1, col_m2, col_m3 = st.columns(3)
+        
+        with col_m1:
+            st.metric(label="Projected 12-Month Revenue", value=f"{sym}{yearly_revenue:,.2f}")
+            
+        with col_m2:
+            st.metric(label="Churn Probability", value=f"{probability:.1%}")
+            
+        with col_m3:
+            # The delta shows the risk in red to emphasize the potential loss
+            st.metric(label="Value at Risk", 
+                      value=f"{sym}{value_at_risk:,.2f}", 
+                      delta=f"-{sym}{value_at_risk:,.2f}", 
+                      delta_color="inverse")
 
 # --- TAB 2: DATA VISUALIZATIONS ---
 with tab2:
