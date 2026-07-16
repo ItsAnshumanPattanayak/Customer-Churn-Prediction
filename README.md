@@ -1,6 +1,6 @@
 <div align="center">
 
-# 📉 ChurnGuard AI
+# 📉 Customer Churn Prediction
 
 ### Predict telecom customer churn before valuable customers walk away
 
